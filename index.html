@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MemberSpace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "tertiary": "#8a4f2c",
+          "on-secondary-fixed": "#141d1e",
+          "on-surface-variant": "#3f484a",
+          "inverse-surface": "#213145",
+          "surface-dim": "#cbdbf5",
+          "on-tertiary-fixed-variant": "#6e3917",
+          "primary-fixed": "#a4eff9",
+          "on-secondary": "#ffffff",
+          "on-error-container": "#93000a",
+          "primary-container": "#5da7b1",
+          "surface-container": "#e5eeff",
+          "surface-container-lowest": "#ffffff",
+          "primary": "#0f6872",
+          "surface-container-high": "#dce9ff",
+          "surface-bright": "#f8f9ff",
+          "surface": "#f8f9ff",
+          "outline": "#6f797a",
+          "on-primary-fixed-variant": "#004f56",
+          "on-secondary-container": "#596364",
+          "on-tertiary": "#ffffff",
+          "primary-fixed-dim": "#89d2dd",
+          "on-tertiary-container": "#562606",
+          "tertiary-container": "#d28b63",
+          "on-background": "#0b1c30",
+          "inverse-primary": "#89d2dd",
+          "on-primary-fixed": "#001f23",
+          "secondary": "#566061",
+          "surface-tint": "#0f6872",
+          "error-container": "#ffdad6",
+          "surface-container-low": "#eff4ff",
+          "on-tertiary-fixed": "#331200",
+          "inverse-on-surface": "#eaf1ff",
+          "secondary-fixed": "#dae4e5",
+          "tertiary-fixed-dim": "#ffb68e",
+          "secondary-container": "#d5dfe0",
+          "on-primary": "#ffffff",
+          "on-surface": "#0b1c30",
+          "on-primary-container": "#003a40",
+          "surface-container-highest": "#d3e4fe",
+          "secondary-fixed-dim": "#bec8c9",
+          "on-error": "#ffffff",
+          "background": "#f8f9ff",
+          "error": "#ba1a1a",
+          "surface-variant": "#d3e4fe",
+          "tertiary-fixed": "#ffdbca",
+          "outline-variant": "#bec8ca",
+          "on-secondary-fixed-variant": "#3f484a"
+        },
+        borderRadius: {
+          "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"
+        },
+        spacing: {
+          "unit": "8px", "stack-sm": "8px", "margin-mobile": "16px",
+          "gutter": "24px", "margin-desktop": "40px", "stack-md": "16px",
+          "stack-lg": "32px", "container-max": "1280px"
+        },
+        fontFamily: {
+          "label-sm": ["Manrope"], "h3": ["Manrope"], "caption": ["Manrope"],
+          "h2": ["Manrope"], "h1": ["Manrope"], "body-lg": ["Manrope"], "body-md": ["Manrope"]
+        },
+        fontSize: {
+          "label-sm": ["14px", {"lineHeight":"1.4","letterSpacing":"0.01em","fontWeight":"600"}],
+          "h3": ["24px", {"lineHeight":"1.3","fontWeight":"600"}],
+          "caption": ["12px", {"lineHeight":"1.4","fontWeight":"500"}],
+          "h2": ["32px", {"lineHeight":"1.2","letterSpacing":"-0.01em","fontWeight":"600"}],
+          "h1": ["40px", {"lineHeight":"1.2","letterSpacing":"-0.02em","fontWeight":"700"}],
+          "body-lg": ["18px", {"lineHeight":"1.6","fontWeight":"400"}],
+          "body-md": ["16px", {"lineHeight":"1.6","fontWeight":"400"}]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body {
+    background-color: #f8f9ff;
+    color: #0b1c30;
+    font-family: 'Manrope', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: max(884px, 100dvh);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .soft-card-shadow { box-shadow: 0px 4px 20px rgba(0,0,0,0.04); }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+
+  /* Page transitions */
+  .page { display: none; }
+  .page.active { display: flex; flex-direction: column; min-height: 100dvh; }
+
+  /* Toast notification */
+  #toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #0f6872; color: white; padding: 12px 24px; border-radius: 999px;
+    font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 600;
+    z-index: 9999; opacity: 0; transition: all 0.3s ease; pointer-events: none;
+    white-space: nowrap; box-shadow: 0 4px 20px rgba(15,104,114,0.3);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.error-toast { background: #ba1a1a; }
+
+  /* Loading spinner */
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white; border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Settings toggle */
+  .peer:checked ~ div { background-color: #0d9488; }
+</style>
+</head>
+<body>
+
+<!-- ===================== TOAST ===================== -->
+<div id="toast"></div>
+
+<!-- ================================================================
+     GOOGLE APPS SCRIPT SETUP INSTRUCTIONS
+     ================================================================
+     1. เปิด Google Sheet ที่ต้องการบันทึกข้อมูล
+     2. ไปที่ Extensions → Apps Script
+     3. วางโค้ดด้านล่างนี้ใน Code.gs แล้ว Save:
+
+     function doPost(e) {
+       var sheet = SpreadsheetApp.getActiveSpreadsheet();
+       var data = JSON.parse(e.postData.contents);
+       var sheetTab = sheet.getSheetByName(data.sheet) || sheet.insertSheet(data.sheet);
+       if (sheetTab.getLastRow() === 0) sheetTab.appendRow(data.headers);
+       sheetTab.appendRow(data.row);
+       return ContentService.createTextOutput(JSON.stringify({status:"ok"}))
+         .setMimeType(ContentService.MimeType.JSON);
+     }
+
+     4. Deploy → New deployment → Web app
+        - Execute as: Me
+        - Who has access: Anyone
+     5. Copy the Web App URL และวางแทน YOUR_APPS_SCRIPT_URL_HERE ด้านล่าง
+     ================================================================ -->
+
+<script>
+  // ⚠️ วาง Google Apps Script Web App URL ของคุณที่นี่
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydaCa-vlh47GNsaQaQPj_CsxAAs4zuzsaxzJuKidxmMwkhrLW-lKrUBiLPeqOxFcAxRQ/exec";
+
+  // ===== App State =====
+  let currentUser = { name: "Alex", email: "", loginTime: "" };
+  let settings = {
+    pushNotifications: true,
+    emailDigests: false
+  };
+
+  // ===== Page Navigation =====
+  function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+  }
+
+  // ===== Toast =====
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = isError ? 'error-toast show' : 'show';
+    setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  // ===== Send to Google Sheet via Apps Script =====
+  async function sendToSheet(sheet, headers, row) {
+    if (APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+      console.warn("Apps Script URL not configured");
+      return true; // ยังคงทำงานต่อได้แม้ไม่ได้ตั้งค่า URL
+    }
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sheet, headers, row })
+      });
+      return true;
+    } catch (err) {
+      console.error("Sheet error:", err);
+      return false;
+    }
+  }
+
+  // ===== LOGIN =====
+  async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const remember = document.getElementById('remember').checked;
+    const btn = document.getElementById('loginBtn');
+    const errorDiv = document.getElementById('loginError');
+
+    if (!email || !password) {
+      errorDiv.classList.remove('hidden');
+      return;
+    }
+    if (password.length < 8) {
+      errorDiv.classList.remove('hidden');
+      errorDiv.querySelector('span:last-child').textContent = "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
+      return;
+    }
+
+    errorDiv.classList.add('hidden');
+    btn.innerHTML = '<span class="spinner"></span><span>กำลังเข้าสู่ระบบ...</span>';
+    btn.disabled = true;
+
+    const loginTime = new Date().toLocaleString('th-TH');
+    currentUser.email = email;
+    currentUser.loginTime = loginTime;
+
+    // บันทึก Login ลง Google Sheet (Sheet: Login_Logs)
+    await sendToSheet(
+      "Login_Logs",
+      ["Email", "Remember Me", "Login Time", "User Agent"],
+      [email, remember ? "Yes" : "No", loginTime, navigator.userAgent.substring(0, 80)]
+    );
+
+    showToast("✓ เข้าสู่ระบบสำเร็จ!");
+    setTimeout(() => {
+      btn.innerHTML = '<span>Login</span><span class="material-symbols-outlined text-xl">arrow_forward</span>';
+      btn.disabled = false;
+      showPage('dashboard');
+      updateDashboard();
+    }, 800);
+  }
+
+  function updateDashboard() {
+    const el = document.getElementById('lastLoginTime');
+    if (el) el.textContent = currentUser.loginTime || "-";
+  }
+
+  // ===== LOGOUT =====
+  async function handleLogout() {
+    const logoutTime = new Date().toLocaleString('th-TH');
+
+    await sendToSheet(
+      "Login_Logs",
+      ["Email", "Remember Me", "Login Time", "User Agent"],
+      [currentUser.email, "-", "LOGOUT: " + logoutTime, "-"]
+    );
+
+    showToast("ออกจากระบบแล้ว");
+    setTimeout(() => {
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+      showPage('login');
+    }, 800);
+  }
+
+  // ===== SETTINGS SAVE =====
+  async function saveSettings() {
+    const btn = document.getElementById('saveSettingsBtn');
+    btn.innerHTML = '<span class="spinner"></span> กำลังบันทึก...';
+    btn.disabled = true;
+
+    const savedTime = new Date().toLocaleString('th-TH');
+
+    // บันทึก Settings ลง Google Sheet (Sheet: Settings_Log)
+    await sendToSheet(
+      "Settings_Log",
+      ["Email", "Push Notifications", "Email Digests", "Saved At"],
+      [
+        currentUser.email || "unknown",
+        settings.pushNotifications ? "ON" : "OFF",
+        settings.emailDigests ? "ON" : "OFF",
+        savedTime
+      ]
+    );
+
+    showToast("✓ บันทึก Settings สำเร็จ!");
+    setTimeout(() => {
+      btn.innerHTML = '<span class="material-symbols-outlined text-xl">save</span> บันทึกการตั้งค่า';
+      btn.disabled = false;
+    }, 800);
+  }
+
+  // ===== SHOW QR CODE =====
+  function showQR() {
+    showToast("🔑 Member ID: MS-" + Math.random().toString(36).substr(2,8).toUpperCase());
+  }
+
+  // ===== TOGGLE PASSWORD =====
+  function togglePassword() {
+    const input = document.getElementById('password');
+    const icon = document.getElementById('eyeIcon');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.textContent = 'visibility_off';
+    } else {
+      input.type = 'password';
+      icon.textContent = 'visibility';
+    }
+  }
+
+  // ===== TOGGLE SETTING =====
+  function toggleSetting(key, checkbox) {
+    settings[key] = checkbox.checked;
+  }
+
+  window.onload = () => showPage('login');
+</script>
+
+<!-- ================================================================
+     PAGE 1: LOGIN
+     ================================================================ -->
+<div id="login" class="page">
+  <!-- Background blobs -->
+  <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none opacity-50">
+    <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]"></div>
+    <div class="absolute bottom-0 right-0 w-[50%] h-[50%] rounded-full bg-tertiary/5 blur-[150px]"></div>
+  </div>
+
+  <main class="flex-grow flex items-center justify-center px-4 md:px-gutter">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-5xl w-full items-center py-stack-lg">
+
+      <!-- Left: Brand -->
+      <div class="hidden lg:flex flex-col space-y-stack-md pr-10">
+        <div class="flex items-center space-x-2 mb-2">
+          <span class="material-symbols-outlined text-primary text-4xl">group_work</span>
+          <h1 class="font-h1 text-h1 text-primary tracking-tight">MemberSpace</h1>
+        </div>
+        <h2 class="font-h2 text-h2 text-on-surface mb-2">The quiet space for community management.</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">Experience soft minimalism designed to reduce cognitive load while managing your members, payments, and community growth.</p>
+        <div class="grid grid-cols-2 gap-4 pt-stack-lg">
+          <div class="bg-surface-container-high rounded-xl p-6 flex flex-col justify-between h-40 soft-card-shadow">
+            <span class="material-symbols-outlined text-primary text-3xl">shield_person</span>
+            <div class="font-label-sm text-label-sm text-on-surface-variant">Secure Member Access</div>
+          </div>
+          <div class="bg-white rounded-xl p-6 flex flex-col justify-between h-40 soft-card-shadow">
+            <span class="material-symbols-outlined text-tertiary text-3xl">auto_awesome</span>
+            <div class="font-label-sm text-label-sm text-on-surface-variant">Intelligent Automation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Login Card -->
+      <div class="flex justify-center w-full">
+        <div class="w-full max-w-md bg-white p-8 md:p-10 rounded-[1.25rem] soft-card-shadow border border-surface-container">
+
+          <!-- Mobile Logo -->
+          <div class="lg:hidden flex flex-col items-center mb-stack-lg">
+            <span class="material-symbols-outlined text-primary text-5xl mb-2">group_work</span>
+            <h1 class="font-h2 text-h2 text-primary">MemberSpace</h1>
+          </div>
+
+          <div class="mb-stack-lg">
+            <h2 class="font-h3 text-h3 text-on-surface mb-1">Welcome back</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant">Please enter your details to sign in.</p>
+          </div>
+
+          <!-- Error -->
+          <div id="loginError" class="hidden bg-error-container text-on-error-container p-3 rounded-lg mb-4 flex items-center gap-2 border border-error/10">
+            <span class="material-symbols-outlined text-lg">error</span>
+            <span class="font-label-sm text-label-sm">Invalid email or password. Please try again.</span>
+          </div>
+
+          <form class="space-y-stack-md" onsubmit="handleLogin(event)">
+            <!-- Email -->
+            <div class="space-y-2">
+              <label class="font-label-sm text-label-sm text-on-surface" for="email">Email Address</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+                  <span class="material-symbols-outlined text-xl">mail</span>
+                </div>
+                <input class="w-full pl-12 pr-4 py-3 bg-[#F1F5F9] border-transparent focus:border-primary focus:ring-0 focus:bg-white rounded-xl font-body-md transition-all duration-200 placeholder:text-outline-variant" id="email" placeholder="name@company.com" required type="email"/>
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <label class="font-label-sm text-label-sm text-on-surface" for="password">Password</label>
+                <a class="font-caption text-caption text-primary hover:underline" href="#">Forgot password?</a>
+              </div>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+                  <span class="material-symbols-outlined text-xl">lock</span>
+                </div>
+                <input class="w-full pl-12 pr-12 py-3 bg-[#F1F5F9] border-transparent focus:border-primary focus:ring-0 focus:bg-white rounded-xl font-body-md transition-all duration-200 placeholder:text-outline-variant" id="password" placeholder="••••••••" required type="password"/>
+                <button class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors" onclick="togglePassword()" type="button">
+                  <span class="material-symbols-outlined text-xl" id="eyeIcon">visibility</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-2 text-on-tertiary-fixed-variant">
+              <span class="material-symbols-outlined text-[16px]">info</span>
+              <span class="font-caption text-caption">Passwords must be at least 8 characters.</span>
+            </div>
+
+            <!-- Remember -->
+            <div class="flex items-center">
+              <input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary/20 bg-[#F1F5F9] cursor-pointer" id="remember" type="checkbox"/>
+              <label class="ml-3 font-body-md text-body-md text-on-surface-variant cursor-pointer select-none" for="remember">Remember me for 30 days</label>
+            </div>
+
+            <!-- Submit -->
+            <button class="w-full bg-primary text-on-primary font-label-sm text-[16px] py-4 rounded-xl shadow-lg shadow-primary/10 hover:brightness-110 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 mt-stack-md" id="loginBtn" type="submit">
+              <span>Login</span>
+              <span class="material-symbols-outlined text-xl">arrow_forward</span>
+            </button>
+          </form>
+
+          <div class="mt-stack-lg text-center">
+            <p class="font-body-md text-body-md text-on-surface-variant">
+              Don't have an account?
+              <a class="text-primary font-semibold hover:underline" href="#">Request Access</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="p-stack-md text-center">
+    <p class="font-caption text-caption text-outline">© 2024 MemberSpace. Built for communities with clarity and focus.</p>
+  </footer>
+</div>
+
+<!-- ================================================================
+     PAGE 2: DASHBOARD
+     ================================================================ -->
+<div id="dashboard" class="page">
+  <!-- TopAppBar -->
+  <header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-white/80 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.04)] border-b border-slate-100">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">A</div>
+      <span class="font-bold text-xl tracking-tight text-teal-600">MemberSpace</span>
+    </div>
+    <button class="w-10 h-10 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-50 transition-colors">
+      <span class="material-symbols-outlined">notifications</span>
+    </button>
+  </header>
+
+  <main class="flex-grow pt-24 pb-32 px-6 max-w-7xl mx-auto w-full">
+    <!-- Welcome -->
+    <section class="mb-stack-lg">
+      <h1 class="font-h1 text-h1 text-on-background mb-1">Hello, Alex!</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant">Welcome back to your community hub.</p>
+    </section>
+
+    <!-- Bento Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+
+      <!-- Membership Status -->
+      <div class="md:col-span-8 bg-white rounded-xl p-stack-lg soft-card-shadow flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed/20 rounded-bl-full -mr-10 -mt-10"></div>
+        <div class="relative z-10">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded-full text-caption font-label-sm uppercase tracking-wider">Gold Member</span>
+            <span class="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
+          </div>
+          <h2 class="font-h2 text-h2 text-on-surface mb-stack-sm">Premium Access</h2>
+          <p class="font-body-md text-body-md text-on-surface-variant max-w-md">Your subscription is active until December 2024. You have 3 pending invites to share with friends.</p>
+        </div>
+        <div class="mt-stack-lg flex items-center justify-between border-t border-slate-50 pt-stack-md">
+          <div class="flex flex-col">
+            <span class="text-caption font-caption text-slate-400 uppercase">Last Login</span>
+            <span class="font-label-sm text-label-sm text-on-surface" id="lastLoginTime">-</span>
+          </div>
+          <button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-label-sm hover:opacity-90 active:scale-95 transition-all">Manage Plan</button>
+        </div>
+      </div>
+
+      <!-- Member ID Card -->
+      <div class="md:col-span-4 bg-primary-container text-on-primary-container rounded-xl p-stack-lg soft-card-shadow flex flex-col justify-between">
+        <div>
+          <span class="material-symbols-outlined text-4xl mb-4">qr_code_2</span>
+          <h3 class="font-h3 text-h3 mb-2">Member ID</h3>
+          <p class="text-on-primary-container/80 text-body-md font-body-md">Quickly check-in at any of our partner community spaces.</p>
+        </div>
+        <button onclick="showQR()" class="w-full mt-stack-md bg-white/20 hover:bg-white/30 text-on-primary-container py-3 rounded-xl font-label-sm backdrop-blur-sm transition-colors border border-white/20">
+          Show QR Code
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="md:col-span-4 bg-white rounded-xl p-stack-md soft-card-shadow flex items-center gap-4 border border-transparent hover:border-teal-100 transition-colors">
+        <div class="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+          <span class="material-symbols-outlined">event_available</span>
+        </div>
+        <div>
+          <p class="font-caption text-caption text-slate-400 uppercase">Upcoming Events</p>
+          <p class="font-h3 text-h3 text-on-surface">12</p>
+        </div>
+      </div>
+
+      <div class="md:col-span-4 bg-white rounded-xl p-stack-md soft-card-shadow flex items-center gap-4 border border-transparent hover:border-teal-100 transition-colors">
+        <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined">forum</span>
+        </div>
+        <div>
+          <p class="font-caption text-caption text-slate-400 uppercase">New Messages</p>
+          <p class="font-h3 text-h3 text-on-surface">04</p>
+        </div>
+      </div>
+
+      <div class="md:col-span-4 bg-white rounded-xl p-stack-md soft-card-shadow flex items-center gap-4 border border-transparent hover:border-teal-100 transition-colors">
+        <div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary">
+          <span class="material-symbols-outlined">account_balance_wallet</span>
+        </div>
+        <div>
+          <p class="font-caption text-caption text-slate-400 uppercase">Credits Left</p>
+          <p class="font-h3 text-h3 text-on-surface">850</p>
+        </div>
+      </div>
+
+      <!-- Community Highlights -->
+      <div class="md:col-span-12 bg-white rounded-xl soft-card-shadow overflow-hidden">
+        <div class="p-stack-md border-b border-slate-50 flex justify-between items-center">
+          <h3 class="font-h3 text-h3">Community Highlights</h3>
+          <button class="text-teal-600 font-label-sm hover:underline">View All</button>
+        </div>
+        <div class="p-stack-md grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+          <div class="group cursor-pointer">
+            <div class="rounded-lg overflow-hidden h-40 mb-3 bg-surface-container-high flex items-center justify-center">
+              <span class="material-symbols-outlined text-5xl text-primary/30">groups</span>
+            </div>
+            <h4 class="font-label-sm text-on-surface mb-1">Design Thinking Workshop</h4>
+            <p class="font-caption text-slate-500">Starts tomorrow at 10:00 AM</p>
+          </div>
+          <div class="group cursor-pointer">
+            <div class="rounded-lg overflow-hidden h-40 mb-3 bg-tertiary-fixed/40 flex items-center justify-center">
+              <span class="material-symbols-outlined text-5xl text-tertiary/40">celebration</span>
+            </div>
+            <h4 class="font-label-sm text-on-surface mb-1">Founder's Social Mixer</h4>
+            <p class="font-caption text-slate-500">Friday, Oct 27 • Rooftop Lounge</p>
+          </div>
+          <div class="group cursor-pointer">
+            <div class="rounded-lg overflow-hidden h-40 mb-3 bg-surface-container flex items-center justify-center">
+              <span class="material-symbols-outlined text-5xl text-primary/30">location_city</span>
+            </div>
+            <h4 class="font-label-sm text-on-surface mb-1">New Location: Downtown</h4>
+            <p class="font-caption text-slate-500">Available for booking now</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Bottom Nav -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.04)] rounded-t-2xl border-t border-slate-100">
+    <a class="flex flex-col items-center justify-center text-teal-600 bg-teal-50/50 rounded-xl px-4 py-1" href="#">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="text-[12px] font-medium">Dashboard</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-slate-400 hover:text-teal-500 transition-colors" href="#">
+      <span class="material-symbols-outlined">person</span>
+      <span class="text-[12px] font-medium">Profile</span>
+    </a>
+    <a onclick="showPage('settings'); return false;" class="flex flex-col items-center justify-center text-slate-400 hover:text-teal-500 transition-colors cursor-pointer" href="#">
+      <span class="material-symbols-outlined">settings</span>
+      <span class="text-[12px] font-medium">Settings</span>
+    </a>
+  </nav>
+
+  <!-- FAB -->
+  <button class="fixed right-6 bottom-24 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-40">
+    <span class="material-symbols-outlined">add</span>
+  </button>
+</div>
+
+<!-- ================================================================
+     PAGE 3: SETTINGS
+     ================================================================ -->
+<div id="settings" class="page">
+  <!-- TopAppBar -->
+  <header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">A</div>
+      <h1 class="font-bold text-xl tracking-tight text-teal-600">MemberSpace</h1>
+    </div>
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 transition-colors text-slate-400">
+      <span class="material-symbols-outlined">notifications</span>
+    </button>
+  </header>
+
+  <main class="flex-grow pt-24 pb-32 px-4 md:px-10 max-w-7xl mx-auto w-full">
+    <div class="mb-stack-lg">
+      <h2 class="font-h2 text-h2 text-on-background mb-unit">Settings</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant">Manage your account preferences and security.</p>
+    </div>
+
+    <!-- Apps Script URL Banner -->
+    <div class="mb-stack-lg bg-surface-container-high rounded-xl p-4 border border-primary/20 flex items-start gap-3">
+      <span class="material-symbols-outlined text-primary mt-0.5">integration_instructions</span>
+      <div>
+        <p class="font-label-sm text-label-sm text-on-surface mb-1">Google Sheet Integration</p>
+        <p class="font-caption text-caption text-on-surface-variant mb-2">วาง Apps Script URL เพื่อเริ่มบันทึกข้อมูลอัตโนมัติ</p>
+        <div class="flex gap-2">
+          <input id="appsScriptInput" type="url" placeholder="https://script.google.com/macros/s/.../exec"
+            class="flex-1 px-3 py-2 bg-white border border-outline-variant rounded-lg font-caption text-caption focus:outline-none focus:border-primary transition-colors"
+            value=""/>
+          <button onclick="updateAppsScriptUrl()" class="px-4 py-2 bg-primary text-white rounded-lg font-label-sm hover:opacity-90 active:scale-95 transition-all text-sm">บันทึก URL</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-stack-lg">
+      <!-- Account & Security -->
+      <section>
+        <h3 class="font-label-sm text-label-sm text-secondary mb-stack-sm px-2 uppercase tracking-wider">Account &amp; Security</h3>
+        <div class="bg-white rounded-xl soft-card-shadow border border-slate-100 overflow-hidden">
+          <button class="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                <span class="material-symbols-outlined">lock</span>
+              </div>
+              <div class="text-left">
+                <p class="font-label-sm text-label-sm text-on-surface">Change Password</p>
+                <p class="font-caption text-caption text-on-surface-variant">Update your login credentials</p>
+              </div>
+            </div>
+            <span class="material-symbols-outlined text-slate-300 group-hover:text-teal-600 transition-colors">chevron_right</span>
+          </button>
+          <div class="mx-5 border-t border-slate-50"></div>
+          <div class="flex items-center justify-between p-5">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                <span class="material-symbols-outlined">card_membership</span>
+              </div>
+              <div class="text-left">
+                <p class="font-label-sm text-label-sm text-on-surface">Premium Plan</p>
+                <p class="font-caption text-caption text-on-surface-variant">Renews on Oct 24, 2024</p>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-teal-100/50 text-teal-700 text-[10px] font-bold uppercase tracking-widest rounded-full">Active</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Preferences -->
+      <section>
+        <h3 class="font-label-sm text-label-sm text-secondary mb-stack-sm px-2 uppercase tracking-wider">Preferences</h3>
+        <div class="bg-white rounded-xl soft-card-shadow border border-slate-100 overflow-hidden">
+          <!-- Push Notifications -->
+          <div class="flex items-center justify-between p-5">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                <span class="material-symbols-outlined">notifications</span>
+              </div>
+              <div class="text-left">
+                <p class="font-label-sm text-label-sm text-on-surface">Push Notifications</p>
+                <p class="font-caption text-caption text-on-surface-variant">Receive alerts about your membership</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input checked class="sr-only peer" type="checkbox" onchange="toggleSetting('pushNotifications', this)"/>
+              <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+            </label>
+          </div>
+          <div class="mx-5 border-t border-slate-50"></div>
+          <!-- Email Digests -->
+          <div class="flex items-center justify-between p-5">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                <span class="material-symbols-outlined">mail</span>
+              </div>
+              <div class="text-left">
+                <p class="font-label-sm text-label-sm text-on-surface">Email Digests</p>
+                <p class="font-caption text-caption text-on-surface-variant">Weekly community updates</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input class="sr-only peer" type="checkbox" onchange="toggleSetting('emailDigests', this)"/>
+              <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Save Settings Button -->
+      <button onclick="saveSettings()" id="saveSettingsBtn"
+        class="w-full flex items-center justify-center gap-2 py-4 px-6 bg-primary text-on-primary font-label-sm rounded-xl hover:opacity-90 active:scale-95 transition-all duration-200">
+        <span class="material-symbols-outlined text-xl">save</span>
+        บันทึกการตั้งค่า
+      </button>
+
+      <!-- Help & Support -->
+      <section>
+        <h3 class="font-label-sm text-label-sm text-secondary mb-stack-sm px-2 uppercase tracking-wider">Help &amp; Support</h3>
+        <div class="bg-white rounded-xl soft-card-shadow border border-slate-100 overflow-hidden">
+          <button class="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                <span class="material-symbols-outlined">help</span>
+              </div>
+              <p class="font-label-sm text-label-sm text-on-surface">Help Center</p>
+            </div>
+            <span class="material-symbols-outlined text-slate-300 group-hover:text-teal-600 transition-colors">open_in_new</span>
+          </button>
+          <div class="mx-5 border-t border-slate-50"></div>
+          <button class="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                <span class="material-symbols-outlined">description</span>
+              </div>
+              <p class="font-label-sm text-label-sm text-on-surface">Privacy Policy</p>
+            </div>
+            <span class="material-symbols-outlined text-slate-300 group-hover:text-teal-600 transition-colors">chevron_right</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Logout -->
+      <div class="pt-stack-md">
+        <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 py-4 px-6 bg-white border border-error text-error font-label-sm rounded-xl hover:bg-error/5 active:scale-95 transition-all duration-200">
+          <span class="material-symbols-outlined">logout</span>
+          Logout
+        </button>
+        <p class="text-center font-caption text-caption text-slate-400 mt-stack-md">App Version 2.4.0 (Build 892)</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Nav -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-white border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] rounded-t-2xl">
+    <a onclick="showPage('dashboard'); return false;" class="flex flex-col items-center justify-center text-slate-400 hover:text-teal-500 transition-colors cursor-pointer" href="#">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="text-[12px] font-medium mt-1">Dashboard</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-slate-400 hover:text-teal-500 transition-colors" href="#">
+      <span class="material-symbols-outlined">person</span>
+      <span class="text-[12px] font-medium mt-1">Profile</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-teal-600 bg-teal-50/50 rounded-xl px-4 py-1" href="#">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+      <span class="text-[12px] font-bold mt-1">Settings</span>
+    </a>
+  </nav>
+</div>
+
+<script>
+  function updateAppsScriptUrl() {
+    const val = document.getElementById('appsScriptInput').value.trim();
+    if (!val || !val.startsWith('https://script.google.com')) {
+      showToast("⚠️ URL ไม่ถูกต้อง กรุณาวาง Apps Script URL", true);
+      return;
+    }
+    window.APPS_SCRIPT_URL = val;
+    // Update the const (override)
+    Object.defineProperty(window, 'APPS_SCRIPT_URL', { value: val, writable: true });
+    showToast("✓ บันทึก URL สำเร็จ! พร้อมส่งข้อมูลแล้ว");
+  }
+</script>
+
+</body>
+</html>
