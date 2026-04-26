@@ -155,7 +155,7 @@
 
 <script>
   // ⚠️ วาง Google Apps Script Web App URL ของคุณที่นี่
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydaCa-vlh47GNsaQaQPj_CsxAAs4zuzsaxzJuKidxmMwkhrLW-lKrUBiLPeqOxFcAxRQ/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAKs79Hr_9zJp5WYQblcUYgCuFnxMDOsh79pwCEKzRI090nlGbFLDGFIKI-naoKj9SWg/exec";
 
   // ===== App State =====
   let currentUser = { name: "Alex", email: "", loginTime: "" };
@@ -180,7 +180,7 @@
 
   // ===== Send to Google Sheet via Apps Script =====
   async function sendToSheet(sheet, headers, row) {
-    if (APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+    if (APPS_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwAKs79Hr_9zJp5WYQblcUYgCuFnxMDOsh79pwCEKzRI090nlGbFLDGFIKI-naoKj9SWg/exec") {
       console.warn("Apps Script URL not configured");
       return true; // ยังคงทำงานต่อได้แม้ไม่ได้ตั้งค่า URL
     }
